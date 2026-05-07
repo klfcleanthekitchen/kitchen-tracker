@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🍽️ Kitchen Crew Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css"/>
+<style>
+:root {
+  --bg:#f0f4f0;--bg-card:#ffffff;--bg-muted:#f5f7f5;
+  --text:#1a1a1a;--text-muted:#666;--text-faint:#aaa;
+  --border:rgba(0,0,0,0.08);--border-mid:rgba(0,0,0,0.15);
+  --r-md:10px;--r-lg:16px;--r-xl:20px;
+  --green:#1D9E75;--green-dark:#0a5c43;--green-light:#d6f5eb;
+  --blue:#3B82F6;--blue-light:#EFF6FF;
+  --purple:#8B5CF6;--purple-light:#F5F3FF;
+  --amber:#F59E0B;--amber-light:#FFFBEB;
+  --red:#EF4444;--red-light:#FEF2F2;
+  --teal:#0D9488;--teal-light:#F0FDFA;
+  --orange:#F97316;--orange-light:#FFF7ED;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#111714;--bg-card:#1c201c;--bg-muted:#252925;
+    --text:#f0f0f0;--text-muted:#888;--text-faint:#555;
+    --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.15);
+    --green-light:#0a2e1e;--blue-light:#0f1f3d;--purple-light:#1a1040;
+    --amber-light:#2a1f05;--red-light:#2a0a0a;--teal-light:#071f1d;--orange-light:#2a1205;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.25rem 1rem 3rem;}
+.container{max-width:660px;margin:0 auto;}
+.header{display:flex;align-items:center;gap:14px;margin-bottom:1.25rem;padding:1rem 1.25rem;background:var(--bg-card);border-radius:var(--r-xl);border:0.5px solid var(--border);}
+.header-icon{width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#1D9E75,#0a5c43);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(29,158,117,0.3);}
+.header-title{font-size:20px;font-weight:700;color:var(--text);}
+.header-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+.sync-bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg-card);border:0.5px solid var(--border);border-radius:var(--r-md);margin-bottom:1.25rem;font-size:12px;color:var(--text-muted);}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);flex-shrink:0;transition:background .3s;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite;}
+.sync-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.reset-btn{margin-left:auto;font-size:11px;color:var(--red);background:none;border:0.5px solid rgba(239,68,68,0.3);border-radius:6px;padding:3px 10px;cursor:pointer;font-family:inherit;}
+.reset-btn:hover{background:var(--red-light);}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem;}
+.stat{background:var(--bg-card);border:0.5px solid var(--border);border-radius:var(--r-lg);padding:.875rem 1rem;}
+.stat-label{font-size:10px;font-weight:600;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px;}
+.stat-val{font-size:24px;font-weight:700;color:var(--text);}
+.stat-val.green{color:var(--green);}
+.sec{font-size:11px;font-weight:700;color:var(--text-muted);margin-bottom:10px;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
+.ni-wrap{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding:13px 16px;background:var(--bg-card);border:2px solid var(--green);border-radius:var(--r-lg);}
+.ni-wrap label{font-size:13px;color:var(--text-muted);white-space:nowrap;font-weight:500;}
+.ni{flex:1;border:none;background:transparent;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;outline:none;}
+.ni::placeholder{color:var(--text-faint);font-weight:400;}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.abtn{display:flex;align-items:center;gap:8px;padding:12px 13px;border-radius:var(--r-md);border:1.5px solid var(--border);background:var(--bg-card);cursor:pointer;font-size:13px;font-weight:500;color:var(--text);font-family:inherit;transition:all .15s;text-align:left;}
+.abtn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.abtn:active{transform:scale(0.98);}
+.abtn:disabled{opacity:0.45;cursor:not-allowed;transform:none;box-shadow:none;}
+.abtn i{font-size:18px;flex-shrink:0;}
+.abtn.g{border-color:rgba(29,158,117,0.25);background:linear-gradient(135deg,var(--bg-card),var(--green-light));}
+.abtn.g i{color:var(--green);}
+.abtn.b{border-color:rgba(59,130,246,0.25);background:linear-gradient(135deg,var(--bg-card),var(--blue-light));}
+.abtn.b i{color:var(--blue);}
+.abtn.p{border-color:rgba(139,92,246,0.25);background:linear-gradient(135deg,var(--bg-card),var(--purple-light));}
+.abtn.p i{color:var(--purple);}
+.abtn.t{border-color:rgba(13,148,136,0.25);background:linear-gradient(135deg,var(--bg-card),var(--teal-light));}
+.abtn.t i{color:var(--teal);}
+.abtn.a{border-color:rgba(245,158,11,0.25);background:linear-gradient(135deg,var(--bg-card),var(--amber-light));}
+.abtn.a i{color:var(--amber);}
+.abtn.o{border-color:rgba(249,115,22,0.35);background:linear-gradient(135deg,var(--bg-card),var(--orange-light));}
+.abtn.o i{color:var(--orange);}
+.pp{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700;margin-left:auto;flex-shrink:0;white-space:nowrap;}
+.pp.g{background:var(--green-light);color:var(--green-dark);}
+.pp.b{background:var(--blue-light);color:#1d4ed8;}
+.pp.p{background:var(--purple-light);color:#5b21b6;}
+.pp.t{background:var(--teal-light);color:#0f766e;}
+.pp.a{background:var(--amber-light);color:#92400e;}
+.pp.o{background:var(--orange-light);color:#9a3412;}
+.sdm-callout{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--blue-light);border:1.5px solid rgba(59,130,246,0.3);border-radius:var(--r-lg);margin-bottom:1.25rem;}
+.sdm-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--blue);color:#fff;white-space:nowrap;flex-shrink:0;letter-spacing:.04em;}
+.sdm-text{font-size:13px;color:#1e40af;flex:1;line-height:1.4;}
+.sdm-text strong{font-weight:700;}
+.goal-wrap{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;padding:12px 16px;background:var(--bg-card);border:0.5px solid var(--border);border-radius:var(--r-lg);}
+.goal-wrap label{font-size:13px;color:var(--text-muted);white-space:nowrap;font-weight:500;}
+.goal-input{width:60px;border:1.5px solid var(--green);background:var(--green-light);border-radius:8px;font-size:15px;font-weight:700;color:var(--green-dark);font-family:inherit;outline:none;text-align:center;padding:4px 6px;}
+.goal-hint{font-size:12px;color:var(--text-faint);margin-left:auto;}
+.card{background:var(--bg-card);border:0.5px solid var(--border);border-radius:var(--r-xl);overflow:hidden;margin-bottom:1.25rem;}
+.race-header{padding:10px 16px;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:space-between;}
+.race-header-title{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;}
+.race-header-sub{font-size:11px;color:rgba(255,255,255,0.5);}
+.race-row{display:flex;align-items:center;gap:10px;padding:8px 16px;border-bottom:0.5px solid var(--border);}
+.race-row:last-of-type{border-bottom:none;}
+.race-name{font-size:12px;font-weight:600;color:var(--text-muted);width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;}
+.race-lane{flex:1;height:26px;background:var(--bg-muted);border-radius:99px;position:relative;overflow:hidden;}
+.race-runner{position:absolute;top:0;height:100%;border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:32px;}
+.race-label{font-size:10px;font-weight:700;}
+.race-pts{font-size:12px;font-weight:700;width:42px;text-align:right;flex-shrink:0;}
+.race-footer{padding:8px 16px;text-align:right;font-size:11px;color:var(--text-faint);border-top:0.5px solid var(--border);background:var(--bg-muted);}
+.lb-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:0.5px solid var(--border);}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{font-size:13px;font-weight:700;width:24px;text-align:center;color:var(--text-faint);}
+.lb-rank.gold{color:#d97706;}.lb-rank.silver{color:#6b7280;}.lb-rank.bronze{color:#92400e;}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.lb-name{flex:1;font-size:14px;font-weight:500;color:var(--text);}
+.lb-bar-wrap{width:70px;height:5px;background:var(--bg-muted);border-radius:99px;overflow:hidden;}
+.lb-bar{height:100%;border-radius:99px;background:var(--green);}
+.lb-pts{font-size:14px;font-weight:700;min-width:46px;text-align:right;}
+.badges-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;}
+.badge{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:99px;font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text-muted);}
+.badge.earned{background:var(--green-light);border-color:var(--green);color:var(--green-dark);}
+.badge.locked{opacity:.35;}
+.rules-card{border-radius:var(--r-xl);overflow:hidden;margin-bottom:1.25rem;border:2px solid var(--green);}
+.rules-title{background:linear-gradient(135deg,var(--green),var(--green-dark));padding:12px 18px;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+.rules-body{background:var(--bg-card);}
+.rr{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;border-bottom:0.5px solid var(--border);}
+.rr:last-child{border-bottom:none;}
+.rr-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;}
+.rt{font-size:13px;color:var(--text-muted);line-height:1.55;}
+.rt strong{color:var(--text);font-weight:700;}
+.empty-msg{padding:1.5rem;text-align:center;font-size:13px;color:var(--text-faint);}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 22px;border-radius:var(--r-md);font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,0.2);}
+.toast.show{opacity:1;}
+.wed-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 9px;border-radius:99px;background:var(--amber-light);color:#92400e;font-weight:700;border:1px solid rgba(245,158,11,0.3);}
+.footer{text-align:center;font-size:11px;color:var(--text-faint);padding-top:.75rem;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:var(--bg-card);border-radius:var(--r-xl);padding:2rem;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:.75rem;}
+.modal p{font-size:13px;color:var(--text-muted);margin-bottom:1.5rem;line-height:1.6;}
+.modal-btns{display:flex;gap:10px;justify-content:center;}
+.modal-btns button{padding:9px 22px;border-radius:var(--r-md);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;border:none;}
+.btn-cancel{background:var(--bg-muted);color:var(--text);}
+.btn-confirm{background:var(--red);color:#fff;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-icon"><i class="ti ti-tool" style="font-size:22px;color:#fff;"></i></div>
+  <div>
+    <div class="header-title">🍽️ Kitchen Crew Tracker</div>
+    <div class="header-sub" id="week-label"></div>
+  </div>
+</div>
+
+<div class="sync-bar">
+  <div class="sync-dot syncing" id="sync-dot"></div>
+  <span id="sync-label">Loading scoreboard...</span>
+  <button class="reset-btn" onclick="showResetModal()">⚠ SDM Reset</button>
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="stat-label">Total Points</div><div class="stat-val green" id="total-pts">—</div></div>
+  <div class="stat"><div class="stat-label">Cycles Started</div><div class="stat-val" id="stat-started">—</div></div>
+  <div class="stat"><div class="stat-label">Items Unloaded</div><div class="stat-val" id="stat-unloaded">—</div></div>
+  <div class="stat"><div class="stat-label">Microwaves</div><div class="stat-val" id="stat-microwave">—</div></div>
+  <div class="stat"><div class="stat-label">Coffee Actions</div><div class="stat-val" id="stat-coffee">—</div></div>
+  <div class="stat"><div class="stat-label">Soap Reports</div><div class="stat-val" id="stat-soap">—</div></div>
+</div>
+
+<div class="ni-wrap">
+  <label for="name-input"><i class="ti ti-user" style="font-size:16px;vertical-align:-2px;margin-right:4px;color:var(--green);"></i>Logging as:</label>
+  <input class="ni" id="name-input" type="text" placeholder="Type your name…" maxlength="30" autocomplete="off"/>
+</div>
+
+<div class="sec">Log an action <span id="wed-indicator"></span></div>
+<div class="actions" id="action-buttons">
+  <button class="abtn g" onclick="logAction('loaded',2)"><i class="ti ti-arrow-down-circle"></i><span>Loaded dishes</span><span class="pp g">+2 pts</span></button>
+  <button class="abtn b" onclick="logAction('started',3)"><i class="ti ti-player-play"></i><span>Started cycle</span><span class="pp b">+3 pts</span></button>
+  <button class="abtn t" onclick="logAction('unloaded',2)"><i class="ti ti-arrow-up-circle"></i><span>Unloaded items</span><span class="pp t">+2 pts</span></button>
+  <button class="abtn a" onclick="logAction('soap',1)"><i class="ti ti-bell"></i><span>Reported soap out</span><span class="pp a">+1 pt</span></button>
+  <button class="abtn p" onclick="logAction('microwave',4)" style="grid-column:span 2;"><i class="ti ti-flame"></i><span>Cleaned the microwave</span><span class="pp p">+4 pts</span></button>
+  <button class="abtn o" onclick="logAction('coffeefilter',4)" style="grid-column:span 2;"><i class="ti ti-coffee"></i><span>Cleaned coffee pot filter</span><span class="pp o">+4 pts ⭐</span></button>
+  <button class="abtn o" onclick="logAction('coffeebatch',4)" style="grid-column:span 2;"><i class="ti ti-coffee-off"></i><span>Started fresh coffee batch</span><span class="pp o">+4 pts ⭐</span></button>
+</div>
+
+<div class="sdm-callout">
+  <i class="ti ti-settings-2" style="font-size:20px;color:#2563eb;flex-shrink:0;"></i>
+  <div class="sdm-text">Out of soap? Raise a ticket with the <strong>Soap Dependency Manager (SDM)</strong> — your on-call engineer for critical consumable incidents. 🧼</div>
+  <span class="sdm-badge">SDM ON DUTY</span>
+</div>
+
+<div class="goal-wrap">
+  <label for="goal-input"><i class="ti ti-flag-3" style="font-size:16px;vertical-align:-2px;margin-right:4px;color:var(--green);"></i>Race goal:</label>
+  <input class="goal-input" id="goal-input" type="number" min="1" value="30"/>
+  <span style="font-size:13px;color:var(--text-muted);font-weight:500;">pts to win</span>
+  <span class="goal-hint">Edit anytime</span>
+</div>
+
+<div class="sec">🏁 The race</div>
+<div class="card">
+  <div class="race-header">
+    <div class="race-header-title"><i class="ti ti-tournament" style="font-size:15px;"></i> Points Race</div>
+    <div class="race-header-sub" id="race-header-sub">Finish line: 30 pts</div>
+  </div>
+  <div id="race-track"><div class="empty-msg">Loading race… 🚀</div></div>
+  <div class="race-footer" id="race-footer" style="display:none;"></div>
+</div>
+
+<div class="sec">🏆 Leaderboard</div>
+<div class="card" id="leaderboard"><div class="empty-msg">Loading scores… 🌟</div></div>
+
+<div style="margin-bottom:1.25rem;">
+  <div class="sec">🎖️ Badges</div>
+  <div class="badges-row" id="badges-row"></div>
+</div>
+
+<div class="sec">📋 The rules</div>
+<div class="rules-card">
+  <div class="rules-title"><i class="ti ti-clipboard-list"></i> Kitchen Crew Code of Conduct</div>
+  <div class="rules-body">
+    <div class="rr"><div class="rr-icon" style="background:var(--green-light);"><i class="ti ti-arrow-down-circle" style="color:var(--green);"></i></div><div class="rt"><strong>Use it? Load it.</strong> Rinse your dishes and put them straight in — the sink is not a staging area.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--blue-light);"><i class="ti ti-player-play" style="color:var(--blue);"></i></div><div class="rt"><strong>Full dishwasher? Start it.</strong> 10 seconds of your life, 3 points in the bank.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--teal-light);"><i class="ti ti-arrow-up-circle" style="color:var(--teal);"></i></div><div class="rt"><strong>Clean dishwasher? Unload a few items.</strong> 30 seconds. 2 points. You don't have to do it all.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--purple-light);"><i class="ti ti-flame" style="color:var(--purple);"></i></div><div class="rt"><strong>Nuked something messy? Clean the microwave.</strong> Hero move. 4 points + eternal respect.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--orange-light);"><i class="ti ti-coffee" style="color:var(--orange);"></i></div><div class="rt"><strong>Dirty coffee pot filter? Clean it.</strong> Special task. 4 points. The team owes you a cup.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--orange-light);"><i class="ti ti-coffee-off" style="color:var(--orange);"></i></div><div class="rt"><strong>Empty pot? Make a fresh batch.</strong> Critical infrastructure restored. 4 points.</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--amber-light);"><i class="ti ti-bell" style="color:var(--amber);"></i></div><div class="rt"><strong>Out of soap?</strong> Log it and ping the <strong>SDM</strong>. +1 point for filing the incident report. 🧼</div></div>
+    <div class="rr"><div class="rr-icon" style="background:var(--amber-light);"><i class="ti ti-bolt" style="color:var(--amber);"></i></div><div class="rt"><strong>Wednesday bonus ⚡</strong> All actions earn <strong>double points</strong> on our busiest day.</div></div>
+  </div>
+</div>
+
+<div class="footer">Kitchen Crew Tracker · Kleinfelder · The dishwasher is everyone's critical path 🏗️</div>
+</div>
+
+<!-- SDM Reset Modal -->
+<div class="overlay" id="reset-overlay">
+  <div class="modal">
+    <h3>⚠️ SDM Admin Reset</h3>
+    <p>This will permanently delete <strong>all scores, badges and actions</strong> for everyone. Only the SDM should do this. It cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="hideResetModal()">Cancel</button>
+      <button class="btn-confirm" onclick="confirmReset()">Reset everything</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GAS = 'https://script.google.com/macros/s/AKfycbxuJlzuuHdGgR9P53xZ6-9cVS-vZXUrekxl43UoFy-aTdG1eaaBGdMuftm-bwRiQyqd/exec';
+
+const COLORS = [
+  {bg:'#d6f5eb',color:'#065f46'},{bg:'#ede9fe',color:'#4c1d95'},
+  {bg:'#fef3c7',color:'#78350f'},{bg:'#fce7f3',color:'#831843'},
+  {bg:'#dbeafe',color:'#1e3a8a'},{bg:'#ccfbf1',color:'#134e4a'},
+  {bg:'#fee2e2',color:'#7f1d1d'},{bg:'#ffedd5',color:'#7c2d12'},
+  {bg:'#f0fdf4',color:'#14532d'},{bg:'#fdf4ff',color:'#581c87'},
+];
+
+const EMPTY = {
+  scores:{}, colorMap:{}, colorIndex:0,
+  actions:{loaded:0,started:0,unloaded:0,soap:0,microwave:0,coffeefilter:0,coffeebatch:0},
+  badges:[], goal:30
+};
+
+let state = JSON.parse(JSON.stringify(EMPTY));
+let busy = false;
+let refreshTimer = null;
+
+// ── Helpers ──────────────────────────────────────────────────
+function getWeekLabel(){
+  const now=new Date(), day=now.getDay();
+  const mon=new Date(now); mon.setDate(now.getDate()+(day===0?-6:1-day));
+  const fri=new Date(mon); fri.setDate(mon.getDate()+4);
+  const fmt=d=>d.toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+  return `Week of ${fmt(mon)} – ${fmt(fri)}, ${fri.getFullYear()} · Wednesday is peak day ⚡`;
+}
+function isWed(){ return new Date().getDay()===3; }
+function getGoal(){ return Math.max(1,parseInt(document.getElementById('goal-input').value)||30); }
+function getColor(name){
+  if(!state.colorMap[name]){
+    state.colorMap[name]=COLORS[state.colorIndex%COLORS.length];
+    state.colorIndex++;
+  }
+  return state.colorMap[name];
+}
+function setSyncStatus(s,txt){
+  document.getElementById('sync-dot').className='sync-dot '+s;
+  document.getElementById('sync-label').textContent=txt;
+}
+function setButtonsDisabled(d){
+  document.querySelectorAll('#action-buttons .abtn').forEach(b=>b.disabled=d);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── JSONP call (works for both load & save) ──────────────────
+function jsonp(params){
+  return new Promise((resolve, reject)=>{
+    const cb='cb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const script=document.createElement('script');
+    const timer=setTimeout(()=>{
+      script.remove(); delete window[cb];
+      reject(new Error('Timeout'));
+    }, 12000);
+
+    window[cb]=function(data){
+      clearTimeout(timer); script.remove(); delete window[cb];
+      resolve(data);
+    };
+
+    script.onerror=()=>{
+      clearTimeout(timer); script.remove(); delete window[cb];
+      reject(new Error('Script error'));
+    };
+
+    const qs = Object.entries({...params, callback:cb})
+      .map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+    script.src = GAS+'?'+qs+'&t='+Date.now();
+    document.head.appendChild(script);
+  });
+}
+
+// ── Load scores from Sheet ────────────────────────────────────
+async function loadScores(silent){
+  if(!silent) setSyncStatus('syncing','Loading scores...');
+  try {
+    const data = await jsonp({action:'load'});
+    if(!data || typeof data!=='object') throw new Error('Bad data');
+    // Merge carefully — never replace populated scores with empty
+    const merged = JSON.parse(JSON.stringify(EMPTY));
+    Object.assign(merged, data);
+    merged.actions = Object.assign({}, EMPTY.actions, data.actions||{});
+    merged.scores  = (data.scores && Object.keys(data.scores).length>0)
+                     ? data.scores
+                     : (Object.keys(state.scores).length>0 ? state.scores : {});
+    merged.badges    = data.badges    || state.badges    || [];
+    merged.colorMap  = data.colorMap  || state.colorMap  || {};
+    merged.colorIndex= data.colorIndex!==undefined ? data.colorIndex : state.colorIndex;
+    merged.goal      = data.goal      || state.goal      || 30;
+    state = merged;
+    document.getElementById('goal-input').value = state.goal;
+    setSyncStatus('synced','Live · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    render();
+  } catch(e){
+    setSyncStatus('error','Could not reach server — retrying...');
+    if(!silent) setTimeout(()=>loadScores(false), 5000);
+  }
+}
+
+// ── Save scores to Sheet via JSONP GET ────────────────────────
+async function saveScores(){
+  if(busy) return;
+  busy=true;
+  setSyncStatus('syncing','Saving...');
+  try {
+    state.goal = getGoal();
+    const payload = JSON.stringify(state);
+    const result = await jsonp({action:'save', data: payload});
+    if(result && result.status==='ok'){
+      setSyncStatus('synced','Saved · '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+      // Reload after save to confirm Sheet has the data
+      setTimeout(()=>loadScores(true), 1500);
+    } else {
+      throw new Error(result && result.msg ? result.msg : 'Save failed');
+    }
+  } catch(e){
+    setSyncStatus('error','Save failed: '+e.message);
+    showToast('⚠️ Save failed — please try again');
+  }
+  busy=false;
+}
+
+// ── Log an action ─────────────────────────────────────────────
+async function logAction(type, pts){
+  const input=document.getElementById('name-input');
+  const name=input.value.trim();
+  if(!name){
+    input.focus();
+    input.style.outline='2px solid var(--red)';
+    setTimeout(()=>input.style.outline='',1400);
+    showToast('👋 Enter your name first!');
+    return;
+  }
+  if(busy){ showToast('⏳ Still saving — please wait a moment'); return; }
+
+  const mult=isWed()?2:1;
+  const earned=pts*mult;
+  state.scores[name]=(state.scores[name]||0)+earned;
+  if(state.actions[type]===undefined) state.actions[type]=0;
+  state.actions[type]++;
+  checkBadges(name,type);
+  render();
+  showToast(isWed()
+    ? `${name} +${earned} pts ⚡ Wednesday double!`
+    : `${name} +${earned} pts — nice one! 🎉`);
+  if(state.scores[name]>=getGoal())
+    setTimeout(()=>showToast(`🏆 ${name} crossed the finish line!`),2800);
+
+  setButtonsDisabled(true);
+  await saveScores();
+  setButtonsDisabled(false);
+}
+
+// ── Badges ────────────────────────────────────────────────────
+function checkBadges(name,type){
+  const s=state;
+  if(type==='loaded'       && !s.badges.includes('first-cycle'))      s.badges.push('first-cycle');
+  if(type==='soap'         && !s.badges.includes('soap-hero'))         s.badges.push('soap-hero');
+  if((s.actions.unloaded||0)>=3 && !s.badges.includes('quick-turnaround')) s.badges.push('quick-turnaround');
+  if(type==='microwave'    && !s.badges.includes('microwave-hero'))    s.badges.push('microwave-hero');
+  if((type==='coffeefilter'||type==='coffeebatch') && !s.badges.includes('barista')) s.badges.push('barista');
+  if(Math.max(0,...Object.values(s.scores))>=getGoal() && !s.badges.includes('month-champ')) s.badges.push('month-champ');
+}
+
+// ── Reset (SDM only) ──────────────────────────────────────────
+function showResetModal(){ document.getElementById('reset-overlay').classList.add('show'); }
+function hideResetModal(){ document.getElementById('reset-overlay').classList.remove('show'); }
+async function confirmReset(){
+  hideResetModal();
+  state = JSON.parse(JSON.stringify(EMPTY));
+  state.goal = getGoal();
+  render();
+  showToast('🔄 All scores reset by SDM');
+  await saveScores();
+}
+
+// ── Render ────────────────────────────────────────────────────
+function render(){
+  const sorted=Object.keys(state.scores).sort((a,b)=>state.scores[b]-state.scores[a]);
+  const max=sorted.length?Math.max(1,state.scores[sorted[0]]):1;
+  const total=Object.values(state.scores).reduce((a,b)=>a+b,0);
+  const goal=getGoal();
+
+  document.getElementById('total-pts').textContent       = total;
+  document.getElementById('stat-started').textContent    = state.actions.started||0;
+  document.getElementById('stat-unloaded').textContent   = state.actions.unloaded||0;
+  document.getElementById('stat-microwave').textContent  = state.actions.microwave||0;
+  document.getElementById('stat-coffee').textContent     = (state.actions.coffeefilter||0)+(state.actions.coffeebatch||0);
+  document.getElementById('stat-soap').textContent       = state.actions.soap||0;
+  document.getElementById('wed-indicator').innerHTML     = isWed()
+    ? '<span class="wed-badge">⚡ 2x Wednesday!</span>' : '';
+  document.getElementById('race-header-sub').textContent = `Finish line: ${goal} pts`;
+
+  // RACE
+  const rt=document.getElementById('race-track');
+  const rf=document.getElementById('race-footer');
+  if(!sorted.length){
+    rt.innerHTML='<div class="empty-msg">No scores yet — be the first to log an action! 🚀</div>';
+    rf.style.display='none';
+  } else {
+    rt.innerHTML=sorted.map(name=>{
+      const score=state.scores[name];
+      const c=getColor(name);
+      const pct=Math.min(100,Math.round((score/goal)*100));
+      const done=score>=goal;
+      return `<div class="race-row">
+        <div class="race-name" title="${name}">${name}</div>
+        <div class="race-lane">
+          <div class="race-runner" style="width:${Math.max(pct,10)}%;background:${c.bg};">
+            <span class="race-label" style="color:${c.color};">${name.slice(0,2).toUpperCase()}</span>
+          </div>
+          ${done?'<span style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:14px;">🏁</span>':''}
+        </div>
+        <div class="race-pts" style="color:${done?'var(--green)':''}">${score}${done?' 🏆':''}</div>
+      </div>`;
+    }).join('');
+    rf.style.display='block';
+    rf.textContent=`🏁 Finish line: ${goal} pts`;
+  }
+
+  // LEADERBOARD
+  const lb=document.getElementById('leaderboard');
+  const ranks=['gold','silver','bronze'];
+  if(!sorted.length){
+    lb.innerHTML='<div class="empty-msg">No scores yet — log your first action! 🌟</div>';
+  } else {
+    lb.innerHTML=sorted.map((name,i)=>{
+      const score=state.scores[name];
+      const c=getColor(name);
+      const pct=Math.round((score/max)*100);
+      return `<div class="lb-row">
+        <div class="lb-rank ${i<3?ranks[i]:''}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)}</div>
+        <div class="av" style="background:${c.bg};color:${c.color};">${name.slice(0,2).toUpperCase()}</div>
+        <div class="lb-name">${name}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${pct}%"></div></div>
+        <div class="lb-pts" style="color:${score>=goal?'var(--green)':''}">${score}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // BADGES
+  const badgeDefs=[
+    {id:'first-cycle',      icon:'ti-trophy',  label:'First cycle'},
+    {id:'soap-hero',        icon:'ti-droplet', label:'Soap hero'},
+    {id:'quick-turnaround', icon:'ti-bolt',    label:'Quick turnaround'},
+    {id:'microwave-hero',   icon:'ti-flame',   label:'Microwave hero'},
+    {id:'barista',          icon:'ti-coffee',  label:'Office barista'},
+    {id:'month-champ',      icon:'ti-star',    label:'Champion of the month'},
+  ];
+  document.getElementById('badges-row').innerHTML=badgeDefs.map(b=>
+    `<div class="badge ${state.badges.includes(b.id)?'earned':'locked'}"><i class="ti ${b.icon}"></i>${b.label}</div>`
+  ).join('');
+}
+
+// ── Auto-refresh every 30s ────────────────────────────────────
+function scheduleRefresh(){
+  clearTimeout(refreshTimer);
+  refreshTimer=setTimeout(()=>{ loadScores(true); scheduleRefresh(); },30000);
+}
+
+// ── Init ──────────────────────────────────────────────────────
+document.getElementById('goal-input').addEventListener('change',()=>{ render(); saveScores(); });
+document.getElementById('week-label').textContent=getWeekLabel();
+loadScores(false);
+scheduleRefresh();
+</script>
+</body>
+</html>
